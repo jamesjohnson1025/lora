@@ -6,6 +6,8 @@ import torch.nn as nn
 import bitsandbytes as bnb 
 from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
 from peft import LoraConfig,get_peft_model
+from datasets import load_dataset
+import transformers
 
 
 # check if cuda is available
@@ -71,3 +73,49 @@ model = get_peft_model(model=model,peft_config=config)
 print_trainable_parameters(model=model)
 
 
+# obtain Lora config 
+config = LoraConfig(
+    r=8,
+    lora_alpha=16,
+    target_modules=['query_key_value'],
+    lora_dropout=0.05,
+    bias="none",
+    task_type="CASUAL_LM"
+)
+
+model = get_peft_model(model=model,peft_config=config)
+print_trainable_parameters(model=model)
+
+
+qa_dataset = load_dataset('squad_v2')
+
+
+def create_prompt(context, question, answer):
+    result = ""
+    if len(answer['text']) < 1:
+        result =  "I don't the answer"
+    else:
+        result = answer['text'][0]
+    prompt_template = f"### CONTEXT\n{context}\n\n### QUESTION\n{question}\n\n### AMSWER\n{result}</s>"
+    return prompt_template
+
+mapped_dataset = qa_dataset.map(lambda samples: tokenizer(create_prompt(samples['context'],samples['question'],samples['answers'])))
+
+trainer = transformers.Trainer(
+                model=model,
+                train_dataset=mapped_dataset['train'],
+                args=transformers.TrainingArguments(
+                    per_device_eval_batch_size=4,
+                    gradient_accumulation_steps=4,
+                    warmup_steps=100,
+                    max_steps=100,
+                    num_train_epochs=3,
+                    learning_rate=1e-3,
+                    fp16=True,
+                    logging_steps=1,
+                    output_dir='outputs'
+                ),
+                data_collator=transformers.DataCollatorForLanguageModeling(tokenizer,mlm=False)
+            )
+model.config.use_cache = False
+trainer.train()
