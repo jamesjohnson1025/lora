@@ -59,18 +59,6 @@ def print_trainable_parameters(model):
 
 
 
-# obtain Lora config 
-config = LoraConfig(
-    r=8,
-    lora_alpha=16,
-    target_modules=['query_key_value'],
-    lora_dropout=0.05,
-    bias="none",
-    task_type="CASUAL_LM"
-)
-
-model = get_peft_model(model=model,peft_config=config)
-print_trainable_parameters(model=model)
 
 
 # obtain Lora config 
@@ -80,7 +68,7 @@ config = LoraConfig(
     target_modules=['query_key_value'],
     lora_dropout=0.05,
     bias="none",
-    task_type="CASUAL_LM"
+    task_type="CAUSAL_LM"
 )
 
 model = get_peft_model(model=model,peft_config=config)
