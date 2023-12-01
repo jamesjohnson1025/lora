@@ -1,14 +1,13 @@
 # Lora exercise
 
-import os 
-import torch 
-import torch.nn as nn
-import bitsandbytes as bnb 
-from transformers import AutoTokenizer, AutoConfig, AutoModelForCausalLM
+
+from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import LoraConfig,get_peft_model
 from datasets import load_dataset
+import bitsandbytes as bnb 
 import transformers
-
+import torch.nn as nn
+import torch 
 
 # check if cuda is available
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -36,7 +35,7 @@ for param in model.parameters():
 model.gradient_checkpointing_enable()
 model.enable_input_require_grads()
 
-
+# The key takeaway here is that CastOutputToFloat is primarily designed to ensure the output of model.lm_head is in float32 format. 
 class CastOutputToFloat(nn.Sequential):
     def forward(self,x): return super().forward(x).to(torch.float32)
 
@@ -71,6 +70,7 @@ config = LoraConfig(
     task_type="CAUSAL_LM"
 )
 
+# Find out the difference between pretrained model and the current model 
 model = get_peft_model(model=model,peft_config=config)
 print_trainable_parameters(model=model)
 
@@ -89,6 +89,7 @@ def create_prompt(context, question, answer):
 
 mapped_dataset = qa_dataset.map(lambda samples: tokenizer(create_prompt(samples['context'],samples['question'],samples['answers'])))
 
+# Understand the parameters once again
 trainer = transformers.Trainer(
                 model=model,
                 train_dataset=mapped_dataset['train'],
@@ -105,5 +106,7 @@ trainer = transformers.Trainer(
                 ),
                 data_collator=transformers.DataCollatorForLanguageModeling(tokenizer,mlm=False)
             )
+
+# WHat is the use of cache here.
 model.config.use_cache = False
 trainer.train()
