@@ -110,3 +110,12 @@ trainer = transformers.Trainer(
 # WHat is the use of cache here.
 model.config.use_cache = False
 trainer.train()
+
+
+# Upload to hugging_face
+model_name = "bloom7b__finetune_sample"
+HUGGING_FACE_USER_NAME = "james92"
+
+model.push_to_hub(f"{HUGGING_FACE_USER_NAME}/{model_name}", use_auth_token=True)
+
+print("Model is saved in hggingface")

@@ -5,3 +5,4 @@ loralib
 transformers
 peft
 scipy
+huggingface_hub
