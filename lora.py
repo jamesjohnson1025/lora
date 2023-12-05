@@ -2,7 +2,7 @@
 
 
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from peft import LoraConfig,get_peft_model
+from peft import LoraConfig,get_peft_model,PeftModel,PeftConfig
 from datasets import load_dataset
 import bitsandbytes as bnb 
 import transformers
