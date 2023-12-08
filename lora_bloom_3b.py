@@ -24,7 +24,7 @@ tokenizer = AutoTokenizer.from_pretrained("bigscience/tokenizer")
 #print the model 
 print(model)
 
-
+# freezing the parameter
 for param in model.parameters():
     param.requires_grad=False 
 
