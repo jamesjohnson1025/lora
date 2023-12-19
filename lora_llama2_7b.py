@@ -32,7 +32,7 @@ quant_config = BitsAndBytesConfig(
 # Model 
 base_model = AutoModelForCausalLM.from_pretrained(
         base_model_name,
-        quant_config = quant_config,
+        quantization_config = quant_config,
         device_map='auto'
 )
 base_model.config.use_cache=False
